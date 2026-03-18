@@ -229,10 +229,10 @@ borderRadius:"10px"
 
 <h2>Resultado</h2>
 
-<p>Actualmente: <b>{actuales}</b> x2 = {actuales*2}</p>
-<p>Alguna vez: <b>{antes}</b> x1 = {antes}</p>
+<p>Indicadores actuales: <b>{actuales}</b></p>
+<p>Indicadores previos: <b>{antes}</b></p>
 
-<p>Total: <b>{total}</b></p>
+<p>Total: <b>{total}</b> puntos</p>
 
 <p>{interpretacion}</p>
 
