@@ -66,36 +66,60 @@ const generarPDF = () => {
 
 const pdf = new jsPDF();
 
+const fecha = new Date().toLocaleDateString();
+
+// 🔹 LOGO
 pdf.addImage(logo, "PNG", 80, 10, 50, 30);
 
-pdf.setFontSize(18);
-pdf.text("Filtro Mexicano del Espectro Autista", 105, 50, {align:"center"});
-
-pdf.setFontSize(12);
-pdf.text(`Nombre: ${nombre}`,20,70);
-pdf.text(`Edad: ${edad}`,20,80);
-
-const fecha = new Date().toLocaleDateString();
-pdf.text(`Fecha: ${fecha}`,20,90);
+// 🔹 TÍTULO
+pdf.setFontSize(16);
+pdf.text("Reporte de Resultados", 105, 50, { align: "center" });
 
 pdf.setFontSize(14);
-pdf.text("Resultados:",20,110);
+pdf.text("Filtro Mexicano para la Detección del Espectro Autista", 105, 60, { align: "center" });
 
+// 🔹 DATOS
 pdf.setFontSize(12);
-pdf.text(`Actualmente: ${actuales} x 2 = ${actuales * 2}`,20,125);
-pdf.text(`Alguna vez: ${antes} x 1 = ${antes}`,20,135);
+pdf.text(`Nombre: ${nombre}`, 20, 80);
+pdf.text(`Edad: ${edad}`, 20, 90);
+pdf.text(`Fecha de aplicación: ${fecha}`, 20, 100);
 
+// 🔹 LÍNEA SEPARADORA
+pdf.line(20, 110, 190, 110);
+
+// 🔹 RESULTADOS
 pdf.setFontSize(14);
-pdf.text(`Total: ${total} puntos`,20,150);
+pdf.text("Resultados", 20, 125);
 
 pdf.setFontSize(12);
-pdf.text("Interpretación:",20,170);
-pdf.text(interpretacion,20,180,{maxWidth:170});
+pdf.text(`Indicadores actuales: ${actuales}`, 20, 140);
+pdf.text(`Indicadores previos: ${antes}`, 20, 150);
 
+pdf.setFontSize(13);
+pdf.text(`Puntaje total: ${total} puntos`, 20, 165);
+
+// 🔹 INTERPRETACIÓN
+pdf.setFontSize(14);
+pdf.text("Interpretación clínica", 20, 185);
+
+pdf.setFontSize(12);
+pdf.text(interpretacion, 20, 195, { maxWidth: 170 });
+
+// 🔹 NOTA
 pdf.setFontSize(10);
-pdf.text("Este instrumento es de detección y no constituye un diagnóstico clínico.",20,210,{maxWidth:170});
+pdf.text(
+"Este instrumento es una herramienta de detección y no constituye un diagnóstico clínico. Los resultados deben ser interpretados por un profesional especializado.",
+20,
+230,
+{ maxWidth: 170 }
+);
 
-pdf.save("resultado_filtro_autismo.pdf");
+// 🔹 FIRMA (opcional pero PRO)
+pdf.text("__________________________", 120, 260);
+pdf.text("Firma del profesional", 125, 270);
+
+// 🔹 GUARDAR
+pdf.save(`Reporte_${nombre || "Paciente"}.pdf`);
 
 };
 
