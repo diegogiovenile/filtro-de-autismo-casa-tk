@@ -65,58 +65,81 @@ const interpretacion = total >= 28
 const generarPDF = () => {
 
 const pdf = new jsPDF();
-
 const fecha = new Date().toLocaleDateString();
 
-// 🔹 LOGO
-pdf.addImage(logo, "PNG", 80, 10, 50, 30);
+// 🎨 COLOR PRINCIPAL (Casa Terakids)
+const color = [155, 202, 213];
 
-// 🔹 TÍTULO
+// 🔷 HEADER
+pdf.setFillColor(...color);
+pdf.rect(0, 0, 210, 30, "F");
+
+// LOGO
+pdf.addImage(logo, "PNG", 10, 5, 20, 20);
+
+// TÍTULO
+pdf.setTextColor(255,255,255);
 pdf.setFontSize(16);
-pdf.text("Reporte de Resultados", 105, 50, { align: "center" });
+pdf.text("Casa Terakids", 105, 15, { align: "center" });
 
-pdf.setFontSize(14);
-pdf.text("Filtro Mexicano para la Detección del Espectro Autista", 105, 60, { align: "center" });
+pdf.setFontSize(11);
+pdf.text("Reporte de Evaluación", 105, 23, { align: "center" });
+
+// 🔄 RESET COLOR
+pdf.setTextColor(0,0,0);
 
 // 🔹 DATOS
 pdf.setFontSize(12);
-pdf.text(`Nombre: ${nombre}`, 20, 80);
-pdf.text(`Edad: ${edad}`, 20, 90);
-pdf.text(`Fecha de aplicación: ${fecha}`, 20, 100);
+pdf.text(`Nombre: ${nombre}`, 20, 45);
+pdf.text(`Edad: ${edad}`, 20, 55);
+pdf.text(`Fecha: ${fecha}`, 20, 65);
 
-// 🔹 LÍNEA SEPARADORA
-pdf.line(20, 110, 190, 110);
+// 🔹 SEPARADOR
+pdf.setDrawColor(200);
+pdf.line(20, 75, 190, 75);
 
 // 🔹 RESULTADOS
 pdf.setFontSize(14);
-pdf.text("Resultados", 20, 125);
+pdf.text("Resultados", 20, 90);
 
 pdf.setFontSize(12);
-pdf.text(`Indicadores actuales: ${actuales}`, 20, 140);
-pdf.text(`Indicadores previos: ${antes}`, 20, 150);
+pdf.text(`Indicadores actuales: ${actuales}`, 20, 105);
+pdf.text(`Indicadores previos: ${antes}`, 20, 115);
 
-pdf.setFontSize(13);
-pdf.text(`Puntaje total: ${total} puntos`, 20, 165);
+// 🔥 CAJA DE PUNTAJE DESTACADA
+pdf.setFillColor(240,240,240);
+pdf.roundedRect(20, 125, 170, 20, 5, 5, "F");
+
+pdf.setFontSize(14);
+pdf.text(`Puntaje total: ${total} puntos`, 105, 138, { align: "center" });
 
 // 🔹 INTERPRETACIÓN
 pdf.setFontSize(14);
-pdf.text("Interpretación clínica", 20, 185);
+pdf.text("Interpretación clínica", 20, 160);
 
 pdf.setFontSize(12);
-pdf.text(interpretacion, 20, 195, { maxWidth: 170 });
+pdf.text(interpretacion, 20, 170, { maxWidth: 170 });
 
 // 🔹 NOTA
 pdf.setFontSize(10);
+pdf.setTextColor(100);
 pdf.text(
-"Este instrumento es una herramienta de detección y no constituye un diagnóstico clínico. Los resultados deben ser interpretados por un profesional especializado.",
+"Este instrumento es una herramienta de detección y no constituye un diagnóstico clínico. Los resultados deben ser interpretados por un profesional.",
 20,
-230,
+210,
 { maxWidth: 170 }
 );
 
-// 🔹 FIRMA (opcional pero PRO)
-pdf.text("__________________________", 120, 260);
-pdf.text("Firma del profesional", 125, 270);
+// 🔹 FIRMA
+pdf.setTextColor(0);
+pdf.line(120, 250, 190, 250);
+pdf.setFontSize(10);
+pdf.text("Nombre y firma del profesional", 125, 258);
+
+// 🔹 FOOTER
+pdf.setFontSize(9);
+pdf.setTextColor(150);
+pdf.text("Casa Terakids - Psicología infantil y neurodesarrollo", 105, 285, { align: "center" });
 
 // 🔹 GUARDAR
 pdf.save(`Reporte_${nombre || "Paciente"}.pdf`);
