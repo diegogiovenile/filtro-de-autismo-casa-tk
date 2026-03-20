@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import jsPDF from "jspdf";
 import logo from "./assets/logo.png";
 
-const preguntas = [
+const preguntasAutismo = [
 "Utiliza los juguetes acomodándolos, alineándolos o apilándolos.",
 "Parece interesarse más por los objetos que por las personas.",
 "Muestra retraso significativo en la adquisición del lenguaje.",
@@ -38,9 +38,33 @@ const preguntas = [
 "No mide riesgos."
 ];
 
+const preguntasTDAH = [
+"Le cuesta mantener la atención en tareas.",
+"Parece no escuchar cuando se le habla.",
+"No sigue instrucciones.",
+"Dificultad para organizarse.",
+"Evita tareas que requieren esfuerzo mental.",
+"Pierde objetos necesarios.",
+"Se distrae fácilmente.",
+"Es olvidadizo.",
+"Comete errores por descuido.",
+"No se queda quieto.",
+"Se levanta constantemente.",
+"Corre o trepa en exceso.",
+"No juega tranquilamente.",
+"Está en constante movimiento.",
+"Habla en exceso.",
+"Responde antes de terminar la pregunta.",
+"Dificultad para esperar turno.",
+"Interrumpe o se entromete."
+];
+
 export default function App() {
 
-const [respuestas, setRespuestas] = useState(Array(preguntas.length).fill("nunca"));
+const [tipo,setTipo] = useState("autismo");
+const preguntas = tipo === "autismo" ? preguntasAutismo : preguntasTDAH;
+
+const [respuestas, setRespuestas] = useState(Array(preguntas.length).fill("0"));
 const [nombre,setNombre] = useState("");
 const [edad,setEdad] = useState("");
 
@@ -50,252 +74,172 @@ nuevas[index]=value;
 setRespuestas(nuevas);
 };
 
-// 🔥 CÁLCULO CORRECTO
-const actuales = respuestas.filter(r => r === "actual").length;
-const antes = respuestas.filter(r => r === "alguna").length;
+const valores = {
+"0":0,
+"1":1,
+"2":2,
+"3":3
+};
 
-const total = (actuales * 2) + antes;
+// 🔵 AUTISMO
+const totalAutismo = respuestas.filter(r=>r!=="0").length;
 
-// 🔥 INTERPRETACIÓN CLÍNICA
-const interpretacion = total >= 28
-? "Existe la posibilidad de que la persona evaluada se encuentre dentro del espectro autista. Se recomienda acudir con un profesional para una evaluación diagnóstica."
-: "El puntaje no sugiere características significativas dentro del espectro autista según este filtro.";
+// 🔵 TDAH
+const inatencion = respuestas.slice(0,9).reduce((acc,r)=>acc+valores[r],0);
+const hiperactividad = respuestas.slice(9,18).reduce((acc,r)=>acc+valores[r],0);
+const totalTDAH = inatencion + hiperactividad;
 
-// 📄 PDF PROFESIONAL
+// 🔵 INTERPRETACIÓN
+let interpretacion = "";
+
+if(tipo==="autismo"){
+interpretacion = totalAutismo >= 15
+? "Posibilidad de pertenecer al espectro autista. Se recomienda valoración clínica."
+: "Menor probabilidad según este filtro.";
+}else{
+if(totalTDAH >= 36){
+interpretacion = "Alta probabilidad de TDAH. Se recomienda evaluación clínica.";
+}else if(totalTDAH >= 24){
+interpretacion = "Indicadores moderados. Se sugiere seguimiento.";
+}else{
+interpretacion = "Baja probabilidad según esta escala.";
+}
+}
+
+// 🔥 PDF PREMIUM
 const generarPDF = () => {
 
 const pdf = new jsPDF();
 const fecha = new Date().toLocaleDateString();
 
-// 🎨 COLOR PRINCIPAL (Casa Terakids)
-const color = [155, 202, 213];
+const color = [155,202,213];
 
-// 🔷 HEADER
 pdf.setFillColor(...color);
-pdf.rect(0, 0, 210, 30, "F");
+pdf.rect(0,0,210,30,"F");
 
-// LOGO
-pdf.addImage(logo, "PNG", 10, 5, 20, 20);
+pdf.addImage(logo,"PNG",10,5,20,20);
 
-// TÍTULO
 pdf.setTextColor(255,255,255);
 pdf.setFontSize(16);
-pdf.text("Casa Terakids", 105, 15, { align: "center" });
+pdf.text("Casa Terakids",105,15,{align:"center"});
 
 pdf.setFontSize(11);
-pdf.text("Reporte de Evaluación", 105, 23, { align: "center" });
+pdf.text("Reporte de Evaluación",105,23,{align:"center"});
 
-// 🔄 RESET COLOR
 pdf.setTextColor(0,0,0);
 
-// 🔹 DATOS
-pdf.setFontSize(12);
-pdf.text(`Nombre: ${nombre}`, 20, 45);
-pdf.text(`Edad: ${edad}`, 20, 55);
-pdf.text(`Fecha: ${fecha}`, 20, 65);
+pdf.text(`Nombre: ${nombre}`,20,45);
+pdf.text(`Edad: ${edad}`,20,55);
+pdf.text(`Fecha: ${fecha}`,20,65);
 
-// 🔹 SEPARADOR
-pdf.setDrawColor(200);
-pdf.line(20, 75, 190, 75);
+pdf.line(20,75,190,75);
 
-// 🔹 RESULTADOS
 pdf.setFontSize(14);
-pdf.text("Resultados", 20, 90);
+pdf.text("Resultados",20,90);
 
 pdf.setFontSize(12);
-pdf.text(`Indicadores actuales: ${actuales}`, 20, 105);
-pdf.text(`Indicadores previos: ${antes}`, 20, 115);
 
-// 🔥 CAJA DE PUNTAJE DESTACADA
+if(tipo==="autismo"){
+pdf.text(`Indicadores marcados: ${totalAutismo}`,20,110);
+}else{
+pdf.text(`Inatención: ${inatencion}`,20,105);
+pdf.text(`Hiperactividad: ${hiperactividad}`,20,115);
+pdf.text(`Total: ${totalTDAH}`,20,125);
+}
+
 pdf.setFillColor(240,240,240);
-pdf.roundedRect(20, 125, 170, 20, 5, 5, "F");
+pdf.roundedRect(20,140,170,20,5,5,"F");
 
-pdf.setFontSize(14);
-pdf.text(`Puntaje total: ${total} puntos`, 105, 138, { align: "center" });
+pdf.text("Interpretación",105,150,{align:"center"});
 
-// 🔹 INTERPRETACIÓN
-pdf.setFontSize(14);
-pdf.text("Interpretación clínica", 20, 160);
+pdf.setFontSize(11);
+pdf.text(interpretacion,20,170,{maxWidth:170});
 
-pdf.setFontSize(12);
-pdf.text(interpretacion, 20, 170, { maxWidth: 170 });
-
-// 🔹 NOTA
-pdf.setFontSize(10);
-pdf.setTextColor(100);
-pdf.text(
-"Este instrumento es una herramienta de detección y no constituye un diagnóstico clínico. Los resultados deben ser interpretados por un profesional.",
-20,
-210,
-{ maxWidth: 170 }
-);
-
-// 🔹 FIRMA
-pdf.setTextColor(0);
-pdf.line(120, 250, 190, 250);
-pdf.setFontSize(10);
-pdf.text("Nombre y firma del profesional", 125, 258);
-
-// 🔹 FOOTER
 pdf.setFontSize(9);
-pdf.setTextColor(150);
-pdf.text("Casa Terakids - Psicología infantil y neurodesarrollo", 105, 285, { align: "center" });
+pdf.setTextColor(120);
+pdf.text("Este instrumento es de detección y no sustituye diagnóstico clínico.",20,210,{maxWidth:170});
 
-// 🔹 GUARDAR
+pdf.setTextColor(0);
+pdf.line(120,250,190,250);
+pdf.text("Firma del profesional",125,258);
+
 pdf.save(`Reporte_${nombre || "Paciente"}.pdf`);
-
 };
 
-// 💾 GUARDAR RESULTADO
-const guardarResultado = () => {
+// GUARDAR
+const guardarResultado = ()=>{
+const datos = JSON.parse(localStorage.getItem("resultados")) || [];
 
-const resultados = JSON.parse(localStorage.getItem("resultados")) || [];
-
-const nuevo = {
+datos.push({
 nombre,
 edad,
-fecha: new Date().toLocaleDateString(),
-total,
-actuales,
-antes,
-resultado: interpretacion
-};
+tipo,
+fecha:new Date().toLocaleDateString(),
+resultado:interpretacion
+});
 
-resultados.push(nuevo);
-
-localStorage.setItem("resultados", JSON.stringify(resultados));
-
+localStorage.setItem("resultados",JSON.stringify(datos));
 };
 
 return (
 
-<div style={{
-background:"#EFEAE1",
-minHeight:"100vh",
-padding:"40px",
-fontFamily:"Montserrat"
+<div style={{background:"#EFEAE1",minHeight:"100vh",padding:"40px"}}>
+
+<h2>Selecciona evaluación</h2>
+
+<select value={tipo} onChange={(e)=>{
+setTipo(e.target.value);
+setRespuestas(Array(
+e.target.value==="autismo"
+? preguntasAutismo.length
+: preguntasTDAH.length
+).fill("0"));
 }}>
+<option value="autismo">Autismo</option>
+<option value="tdah">TDAH-5</option>
+</select>
 
-<div style={{textAlign:"center"}}>
+<br/><br/>
 
-<img src={logo} alt="Casa Terakids" style={{width:"120px"}}/>
+<input placeholder="Nombre" value={nombre} onChange={(e)=>setNombre(e.target.value)}/>
+<input placeholder="Edad" value={edad} onChange={(e)=>setEdad(e.target.value)}/>
 
-<h1 style={{color:"#588094"}}>
-Filtro Mexicano del Espectro Autista
-</h1>
-
-<p>
-Herramienta de detección para niños de 18 meses a 12 años
-</p>
-
-</div>
-
-<div style={{
-background:"white",
-padding:"20px",
-borderRadius:"10px",
-marginTop:"20px"
-}}>
-
-<div style={{display:"flex",gap:"20px"}}>
-
-<input
-placeholder="Nombre"
-value={nombre}
-onChange={(e)=>setNombre(e.target.value)}
-/>
-
-<input
-placeholder="Edad"
-value={edad}
-onChange={(e)=>setEdad(e.target.value)}
-/>
-
-</div>
-
-</div>
-
-<div style={{marginTop:"30px"}}>
+<div style={{marginTop:"20px"}}>
 
 {preguntas.map((p,i)=>(
-<div key={i}
-style={{
-background:"white",
-padding:"15px",
-marginBottom:"15px",
-borderRadius:"10px"
-}}
->
+<div key={i} style={{background:"white",padding:"10px",marginBottom:"10px"}}>
 
 <p>{i+1}. {p}</p>
 
-<div style={{display:"flex",gap:"20px"}}>
-
-<label>
-<input
-type="radio"
-name={`q${i}`}
-checked={respuestas[i]==="nunca"}
-onChange={()=>handleChange(i,"nunca")}
-/>
-Nunca
-</label>
-
-<label>
-<input
-type="radio"
-name={`q${i}`}
-checked={respuestas[i]==="alguna"}
-onChange={()=>handleChange(i,"alguna")}
-/>
-Alguna vez
-</label>
-
-<label>
-<input
-type="radio"
-name={`q${i}`}
-checked={respuestas[i]==="actual"}
-onChange={()=>handleChange(i,"actual")}
-/>
-Actualmente
-</label>
-
-</div>
+{tipo==="autismo" ? (
+<>
+<label><input type="radio" name={i} onChange={()=>handleChange(i,"0")}/>Nunca</label>
+<label><input type="radio" name={i} onChange={()=>handleChange(i,"1")}/>Sí</label>
+</>
+):(
+<>
+<label><input type="radio" name={i} onChange={()=>handleChange(i,"0")}/>Nunca</label>
+<label><input type="radio" name={i} onChange={()=>handleChange(i,"1")}/>A veces</label>
+<label><input type="radio" name={i} onChange={()=>handleChange(i,"2")}/>Frecuente</label>
+<label><input type="radio" name={i} onChange={()=>handleChange(i,"3")}/>Muy frecuente</label>
+</>
+)}
 
 </div>
 ))}
 
 </div>
 
-<div style={{
-background:"white",
-padding:"20px",
-borderRadius:"10px"
-}}>
+<div style={{background:"white",padding:"20px"}}>
 
-<h2>Resultado</h2>
-
-<p>Indicadores actuales: <b>{actuales}</b></p>
-<p>Indicadores previos: <b>{antes}</b></p>
-
-<p>Total: <b>{total}</b> puntos</p>
+<h3>Resultado</h3>
 
 <p>{interpretacion}</p>
 
-<button
-onClick={()=>{
+<button onClick={()=>{
 guardarResultado();
 generarPDF();
-}}
-style={{
-background:"#9BCAD5",
-border:"none",
-padding:"12px 20px",
-borderRadius:"8px",
-cursor:"pointer"
-}}
->
+}}>
 Descargar PDF
 </button>
 
