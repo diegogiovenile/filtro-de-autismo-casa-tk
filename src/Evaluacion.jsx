@@ -53,7 +53,7 @@ setRespuestas(nuevas);
 const total = respuestas.filter(r => r !== "nunca").length;
 
 const interpretacion =
-total >= 15
+total >= 28
 ? "Se identifican indicadores compatibles con características del espectro autista. Se recomienda valoración diagnóstica."
 : "El puntaje no sugiere características significativas dentro del espectro autista según este filtro.";
 
