@@ -50,7 +50,11 @@ nuevas[index] = value;
 setRespuestas(nuevas);
 };
 
-const total = respuestas.filter(r => r !== "nunca").length;
+const total = respuestas.reduce((acc, r) => {
+  if (r === "alguna") return acc + 1;
+  if (r === "actual") return acc + 2;
+  return acc;
+}, 0);
 
 const interpretacion =
 total >= 28
