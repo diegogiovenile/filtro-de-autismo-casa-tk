@@ -50,17 +50,22 @@ const handleChange = (index, value) => {
   setRespuestas(nuevas);
 };
 
-// ✅ DESGLOSE CORRECTO
+// 🔹 DESGLOSE
 const actuales = respuestas.filter(r => r === "actual").length;
 const algunas = respuestas.filter(r => r === "alguna").length;
-
 const total = (actuales * 2) + algunas;
 
+// 🔹 INTERPRETACIÓN (solo PDF)
 const interpretacion =
   total >= 28
-  ? "Se identifican indicadores compatibles con características del espectro autista. Se recomienda valoración diagnóstica."
+  ? "Se identifican indicadores compatibles con características del espectro autista."
   : "El puntaje no sugiere características significativas dentro del espectro autista según este filtro.";
 
+// 🔹 LISTAS DE REACTIVOS
+const reactivosActuales = preguntas.filter((_, i) => respuestas[i] === "actual");
+const reactivosAlgunas = preguntas.filter((_, i) => respuestas[i] === "alguna");
+
+// 🔥 PDF
 const generarPDF = () => {
 
 const pdf = new jsPDF();
@@ -97,9 +102,9 @@ pdf.setFontSize(14);
 pdf.text("Resultado", 10, 105);
 
 pdf.setFontSize(12);
-pdf.text(`Actuales: ${actuales} x2 = ${actuales * 2}`, 10, 115);
-pdf.text(`Previos: ${algunas} x1 = ${algunas}`, 10, 125);
-pdf.text(`Total: ${total}`, 10, 135);
+pdf.text(`Indicadores actuales: ${actuales}`, 10, 115);
+pdf.text(`Indicadores previos: ${algunas}`, 10, 125);
+pdf.text(`Puntaje total obtenido: ${total}`, 10, 135);
 
 // INTERPRETACIÓN
 pdf.setFillColor(239,234,225);
@@ -109,22 +114,77 @@ pdf.setFontSize(11);
 pdf.text("Interpretación clínica:", 15, 155);
 pdf.text(interpretacion, 15, 165, { maxWidth: 170 });
 
+// 🔹 LISTADO DE REACTIVOS
+let y = 195;
+
+// ACTUALES
+pdf.setFontSize(12);
+pdf.text("Indicadores actuales:", 10, y);
+y += 10;
+
+pdf.setFontSize(10);
+
+reactivosActuales.forEach((item, index) => {
+  const texto = `${index + 1}. ${item}`;
+  const lineas = pdf.splitTextToSize(texto, 180);
+
+  pdf.text(lineas, 10, y);
+  y += lineas.length * 6;
+
+  if (y > 270) {
+    pdf.addPage();
+    y = 20;
+  }
+});
+
+// ESPACIO
+y += 5;
+
+// ALGUNAS
+pdf.setFontSize(12);
+pdf.text("Indicadores previos:", 10, y);
+y += 10;
+
+pdf.setFontSize(10);
+
+reactivosAlgunas.forEach((item, index) => {
+  const texto = `${index + 1}. ${item}`;
+  const lineas = pdf.splitTextToSize(texto, 180);
+
+  pdf.text(lineas, 10, y);
+  y += lineas.length * 6;
+
+  if (y > 270) {
+    pdf.addPage();
+    y = 20;
+  }
+});
+
 // NOTA
 pdf.setFontSize(9);
-pdf.text("Este instrumento es un filtro clínico y no constituye diagnóstico.", 10, 200);
+pdf.text("Este instrumento es un filtro clínico y no constituye diagnóstico.", 10, 280);
 
 pdf.save("reporte_autismo.pdf");
 };
 
 return (
+
 <div style={{background:"#EFEAE1", minHeight:"100vh", padding:"40px"}}>
 
 <div style={{textAlign:"center"}}>
 <img src={logo} style={{width:"120px"}}/>
 <h1 style={{color:"#588094"}}>Evaluación Clínica</h1>
+<p>Filtro de detección para autismo</p>
 </div>
 
-<div style={{background:"white", padding:"20px", borderRadius:"10px", marginTop:"20px", display:"flex", gap:"20px"}}>
+<div style={{
+background:"white",
+padding:"20px",
+borderRadius:"10px",
+marginTop:"20px",
+display:"flex",
+gap:"20px"
+}}>
 <input placeholder="Nombre" value={nombre} onChange={(e)=>setNombre(e.target.value)} />
 <input placeholder="Edad" value={edad} onChange={(e)=>setEdad(e.target.value)} />
 </div>
@@ -132,79 +192,74 @@ return (
 <div style={{marginTop:"30px"}}>
 
 {preguntas.map((p,i)=>(
-<div key={i} style={{background:"white", padding:"15px", marginBottom:"15px", borderRadius:"10px"}}>
+<div key={i} style={{
+background:"white",
+padding:"15px",
+marginBottom:"15px",
+borderRadius:"10px"
+}}>
 
 <p><b>{i+1}. {p}</b></p>
 
 <div style={{
-  display: "flex",
-  gap: "25px",
-  marginTop: "10px",
-  flexWrap: "wrap"
+display:"flex",
+gap:"25px",
+marginTop:"10px",
+flexWrap:"wrap"
 }}>
 
 <label style={{
-  display:"flex",
-  alignItems:"center",
-  gap:"6px",
-  background:"#f7f7f7",
-  padding:"6px 10px",
-  borderRadius:"6px",
-  cursor:"pointer"
+display:"flex",
+alignItems:"center",
+gap:"6px",
+background:"#f7f7f7",
+padding:"6px 10px",
+borderRadius:"6px",
+cursor:"pointer"
 }}>
-<input
-type="radio"
-name={`q${i}`}
-checked={respuestas[i]==="nunca"}
-onChange={()=>handleChange(i,"nunca")}
-/>
+<input type="radio" name={`q${i}`} checked={respuestas[i]==="nunca"} onChange={()=>handleChange(i,"nunca")} />
 Nunca
 </label>
 
 <label style={{
-  display:"flex",
-  alignItems:"center",
-  gap:"6px",
-  background:"#f7f7f7",
-  padding:"6px 10px",
-  borderRadius:"6px",
-  cursor:"pointer"
+display:"flex",
+alignItems:"center",
+gap:"6px",
+background:"#f7f7f7",
+padding:"6px 10px",
+borderRadius:"6px",
+cursor:"pointer"
 }}>
-<input
-type="radio"
-name={`q${i}`}
-checked={respuestas[i]==="alguna"}
-onChange={()=>handleChange(i,"alguna")}
-/>
+<input type="radio" name={`q${i}`} checked={respuestas[i]==="alguna"} onChange={()=>handleChange(i,"alguna")} />
 Alguna vez
 </label>
 
 <label style={{
-  display:"flex",
-  alignItems:"center",
-  gap:"6px",
-  background:"#f7f7f7",
-  padding:"6px 10px",
-  borderRadius:"6px",
-  cursor:"pointer"
+display:"flex",
+alignItems:"center",
+gap:"6px",
+background:"#f7f7f7",
+padding:"6px 10px",
+borderRadius:"6px",
+cursor:"pointer"
 }}>
-<input
-type="radio"
-name={`q${i}`}
-checked={respuestas[i]==="actual"}
-onChange={()=>handleChange(i,"actual")}
-/>
+<input type="radio" name={`q${i}`} checked={respuestas[i]==="actual"} onChange={()=>handleChange(i,"actual")} />
 Actualmente
 </label>
 
 </div>
 
 </div>
-)
-)}
+))}
+
 </div>
 
-<div style={{background:"white", padding:"20px", borderRadius:"10px", marginTop:"20px"}}>
+<div style={{
+background:"white",
+padding:"20px",
+borderRadius:"10px",
+marginTop:"20px"
+}}>
 
 <h2>Resultado</h2>
 
@@ -212,7 +267,17 @@ Actualmente
 <p>Previos: {algunas}</p>
 <p><b>Total: {total}</b></p>
 
-<button onClick={generarPDF} style={{background:"#9BCAD5", padding:"12px", borderRadius:"8px"}}>
+<button
+onClick={generarPDF}
+style={{
+background:"#9BCAD5",
+border:"none",
+padding:"12px 20px",
+borderRadius:"8px",
+cursor:"pointer",
+marginTop:"10px"
+}}
+>
 Descargar PDF
 </button>
 
