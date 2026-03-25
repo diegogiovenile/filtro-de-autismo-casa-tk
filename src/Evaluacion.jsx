@@ -45,34 +45,34 @@ const [nombre, setNombre] = useState("");
 const [edad, setEdad] = useState("");
 
 const handleChange = (index, value) => {
-const nuevas = [...respuestas];
-nuevas[index] = value;
-setRespuestas(nuevas);
+  const nuevas = [...respuestas];
+  nuevas[index] = value;
+  setRespuestas(nuevas);
 };
 
-const total = respuestas.reduce((acc, r) => {
-  if (r === "alguna") return acc + 1;
-  if (r === "actual") return acc + 2;
-  return acc;
-}, 0);
+// ✅ DESGLOSE CORRECTO
+const actuales = respuestas.filter(r => r === "actual").length;
+const algunas = respuestas.filter(r => r === "alguna").length;
+
+const total = (actuales * 2) + algunas;
 
 const interpretacion =
-total >= 28
-? "Se identifican indicadores compatibles con características del espectro autista. Se recomienda valoración diagnóstica."
-: "El puntaje no sugiere características significativas dentro del espectro autista según este filtro.";
+  total >= 28
+  ? "Se identifican indicadores compatibles con características del espectro autista. Se recomienda valoración diagnóstica."
+  : "El puntaje no sugiere características significativas dentro del espectro autista según este filtro.";
 
 const generarPDF = () => {
 
 const pdf = new jsPDF();
 
-// 🎨 COLOR HEADER
+// HEADER
 pdf.setFillColor(155, 202, 213);
 pdf.rect(0, 0, 210, 40, "F");
 
 // LOGO
 pdf.addImage(logo, "PNG", 10, 5, 30, 30);
 
-// TÍTULO
+// TITULO
 pdf.setTextColor(255,255,255);
 pdf.setFontSize(18);
 pdf.text("Evaluación Clínica", 105, 20, { align: "center" });
@@ -80,11 +80,11 @@ pdf.text("Evaluación Clínica", 105, 20, { align: "center" });
 pdf.setFontSize(12);
 pdf.text("Filtro de Autismo", 105, 30, { align: "center" });
 
-// RESET COLOR
+// RESET
 pdf.setTextColor(0,0,0);
 
-// 🧾 TARJETA DE DATOS
-pdf.setFillColor(240, 240, 240);
+// DATOS
+pdf.setFillColor(240,240,240);
 pdf.roundedRect(10, 50, 190, 40, 5, 5, "F");
 
 pdf.setFontSize(11);
@@ -92,99 +92,66 @@ pdf.text(`Nombre: ${nombre || "No especificado"}`, 20, 65);
 pdf.text(`Edad: ${edad || "No especificado"}`, 20, 75);
 pdf.text(`Fecha: ${new Date().toLocaleDateString()}`, 120, 65);
 
-// 🧠 RESULTADO
+// RESULTADO
 pdf.setFontSize(14);
 pdf.text("Resultado", 10, 105);
 
 pdf.setFontSize(12);
-pdf.text(`Indicadores marcados: ${total}`, 10, 115);
+pdf.text(`Actuales: ${actuales} x2 = ${actuales * 2}`, 10, 115);
+pdf.text(`Previos: ${algunas} x1 = ${algunas}`, 10, 125);
+pdf.text(`Total: ${total}`, 10, 135);
 
-// 📊 CAJA INTERPRETACIÓN
-pdf.setFillColor(239, 234, 225);
-pdf.roundedRect(10, 125, 190, 50, 5, 5, "F");
-
-pdf.setFontSize(12);
-pdf.text("Interpretación clínica:", 15, 135);
+// INTERPRETACIÓN
+pdf.setFillColor(239,234,225);
+pdf.roundedRect(10, 145, 190, 40, 5, 5, "F");
 
 pdf.setFontSize(11);
-pdf.text(interpretacion, 15, 145, { maxWidth: 170 });
+pdf.text("Interpretación clínica:", 15, 155);
+pdf.text(interpretacion, 15, 165, { maxWidth: 170 });
 
-// ⚠️ NOTA
+// NOTA
 pdf.setFontSize(9);
-pdf.text(
-"Este instrumento es un filtro clínico y no constituye un diagnóstico.",
-10,
-190
-);
+pdf.text("Este instrumento es un filtro clínico y no constituye diagnóstico.", 10, 200);
 
-// FIRMA
-pdf.setFontSize(10);
-pdf.text("__________________________________", 120, 250);
-
-// GUARDAR
 pdf.save("reporte_autismo.pdf");
-
 };
 
 return (
-
-<div style={{
-background:"#EFEAE1",
-minHeight:"100vh",
-padding:"40px",
-fontFamily:"Montserrat"
-}}>
+<div style={{background:"#EFEAE1", minHeight:"100vh", padding:"40px"}}>
 
 <div style={{textAlign:"center"}}>
-
-<img src={logo} alt="Casa Terakids" style={{width:"120px"}}/>
-
-<h1 style={{color:"#588094"}}>
-Evaluación Clínica
-</h1>
-
-<p>Filtro de detección para autismo</p>
-
+<img src={logo} style={{width:"120px"}}/>
+<h1 style={{color:"#588094"}}>Evaluación Clínica</h1>
 </div>
 
-<div style={{
-background:"white",
-padding:"20px",
-borderRadius:"10px",
-marginTop:"20px",
-display:"flex",
-gap:"20px"
-}}>
-
-<input
-placeholder="Nombre"
-value={nombre}
-onChange={(e)=>setNombre(e.target.value)}
-/>
-
-<input
-placeholder="Edad"
-value={edad}
-onChange={(e)=>setEdad(e.target.value)}
-/>
-
+<div style={{background:"white", padding:"20px", borderRadius:"10px", marginTop:"20px", display:"flex", gap:"20px"}}>
+<input placeholder="Nombre" value={nombre} onChange={(e)=>setNombre(e.target.value)} />
+<input placeholder="Edad" value={edad} onChange={(e)=>setEdad(e.target.value)} />
 </div>
 
 <div style={{marginTop:"30px"}}>
 
 {preguntas.map((p,i)=>(
-<div key={i} style={{
-background:"white",
-padding:"15px",
-marginBottom:"15px",
-borderRadius:"10px"
-}}>
+<div key={i} style={{background:"white", padding:"15px", marginBottom:"15px", borderRadius:"10px"}}>
 
 <p><b>{i+1}. {p}</b></p>
 
-<div style={{display:"flex",gap:"20px"}}>
+<div style={{
+  display: "flex",
+  gap: "25px",
+  marginTop: "10px",
+  flexWrap: "wrap"
+}}>
 
-<label>
+<label style={{
+  display:"flex",
+  alignItems:"center",
+  gap:"6px",
+  background:"#f7f7f7",
+  padding:"6px 10px",
+  borderRadius:"6px",
+  cursor:"pointer"
+}}>
 <input
 type="radio"
 name={`q${i}`}
@@ -194,7 +161,15 @@ onChange={()=>handleChange(i,"nunca")}
 Nunca
 </label>
 
-<label>
+<label style={{
+  display:"flex",
+  alignItems:"center",
+  gap:"6px",
+  background:"#f7f7f7",
+  padding:"6px 10px",
+  borderRadius:"6px",
+  cursor:"pointer"
+}}>
 <input
 type="radio"
 name={`q${i}`}
@@ -204,7 +179,15 @@ onChange={()=>handleChange(i,"alguna")}
 Alguna vez
 </label>
 
-<label>
+<label style={{
+  display:"flex",
+  alignItems:"center",
+  gap:"6px",
+  background:"#f7f7f7",
+  padding:"6px 10px",
+  borderRadius:"6px",
+  cursor:"pointer"
+}}>
 <input
 type="radio"
 name={`q${i}`}
@@ -217,39 +200,24 @@ Actualmente
 </div>
 
 </div>
-))}
-
+)
+)}
 </div>
 
-<div style={{
-background:"white",
-padding:"20px",
-borderRadius:"10px",
-marginTop:"20px"
-}}>
+<div style={{background:"white", padding:"20px", borderRadius:"10px", marginTop:"20px"}}>
 
 <h2>Resultado</h2>
 
-<p>Total de indicadores: <b>{total}</b></p>
-<p>{interpretacion}</p>
+<p>Actuales: {actuales}</p>
+<p>Previos: {algunas}</p>
+<p><b>Total: {total}</b></p>
 
-<button
-onClick={generarPDF}
-style={{
-background:"#9BCAD5",
-border:"none",
-padding:"12px 20px",
-borderRadius:"8px",
-cursor:"pointer",
-marginTop:"10px"
-}}
->
+<button onClick={generarPDF} style={{background:"#9BCAD5", padding:"12px", borderRadius:"8px"}}>
 Descargar PDF
 </button>
 
 </div>
 
 </div>
-
 );
 }
